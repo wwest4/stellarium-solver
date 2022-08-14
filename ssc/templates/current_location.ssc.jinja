@@ -1,33 +1,18 @@
-// Name: Solver Move
+// Name: current_location.ssc
 // Author: Bill West
 // License: Public Domain
 // Version: 0.1
-// Description: Move the view to the specified RA/Dec
-//
-
-var ra = "00h 42m 44s";
-var dec = "41d 16m 9s";
-var zoomArcMin = 6;
-var zoomTransSec = 0;
-var rotationAngle = 30;
-var outputFilename = "solver.json";
+// Description: get the view location in RA/Dec and rotation
 
 
-core.moveToRaDec(ra, dec)
-StelMovementMgr.zoomTo(zoomArcMin, zoomTransSec);
+// poop current ra/dec location values to this file
+var outputFilename = "{{output_filename}}";
 
-// use rotation data to set oculars frame to the current orientation
-Oculars.setSelectedCCDRotationAngle(rotationAngle);
+var currentRa = core.getViewRaJ2000Angle();
+var currentDec = core.getViewDecJ2000Angle();
+var currentRotation = Oculars.getSelectedCCDRotationAngle();
 
-// send current ra/dec location to file
-var current_ra = core.getViewRaJ2000Angle();
-var current_dec = core.getViewDecJ2000Angle()
-var current_rotation = Oculars.getSelectedCCDRotationAngle();
-
-
-core.output("{" + "\"ra\":" + current_ra + "," + "\"dec\":" + current_dec + "," + "\"rotation\":" + current_rotation + "}");
-
-
+core.output("{" + "\"ra\":" + currentRa + "," + "\"dec\":" + currentDec + "," + "\"rotation\":" + currentRotation + "}");
 core.saveOutputAs(outputFilename);
 core.resetOutput();
 

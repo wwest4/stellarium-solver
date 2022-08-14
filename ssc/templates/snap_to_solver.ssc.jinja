@@ -1,0 +1,35 @@
+// Name: Solver Move
+// Author: Bill West
+// License: Public Domain
+// Version: 0.1
+// Description: Move the view to the specified RA/Dec
+//
+
+var ra = "{{ra}}";
+var dec = "{{dec}}";
+var rotationAngle = {{rotation_angle}};
+var zoomArcMin = {{zoom_arc_min}};
+var outputFilename = "{{output_filename}}";
+
+var zoomTransSec = 0;
+
+
+core.moveToRaDec(ra, dec)
+StelMovementMgr.zoomTo(zoomArcMin, zoomTransSec);
+
+// use rotation data to set oculars frame to the current orientation
+Oculars.setSelectedCCDRotationAngle(rotationAngle);
+
+// send current ra/dec location to file
+var current_ra = core.getViewRaJ2000Angle();
+var current_dec = core.getViewDecJ2000Angle()
+var current_rotation = Oculars.getSelectedCCDRotationAngle();
+
+
+core.output("{}");
+
+
+core.saveOutputAs(outputFilename);
+core.resetOutput();
+
+core.wait(5);
