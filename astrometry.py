@@ -1,8 +1,11 @@
 import os
+
 from collections import namedtuple
 from multiprocessing import Process, Queue
+from os.path import exists
 from subprocess import run, PIPE, STDOUT
-from time import time
+from time import sleep, time
+
 
 astrometry_install_dir = '/usr/local/astrometry'
 
@@ -15,9 +18,11 @@ def solver(filename, location):
     process.join()
 
     solution = queue.get()
-    SolverSolution = namedtuple('SolverSolution', solution.keys())
+    if solution:
+        SolverSolution = namedtuple('SolverSolution', solution.keys())
+        return SolverSolution(**solution)
 
-    return SolverSolution(**solution)
+    return None
 
 
 def wcsinfo_parse(wcsinfo_output):
@@ -66,6 +71,9 @@ def _reactivate_venv(venv, path):
         os.environ['VIRTUAL_ENV'] = venv
     os.environ['PATH'] = path
 
+def _wcsinfo_exists(filename):
+    return exists('.'.join(filename.split('.')[0:-1]) + '.wcs')
+    
 
 def _astrometry_solver(filename, location, queue):
     # TODO radius should probably be based on oculars settings/fov,
@@ -96,17 +104,22 @@ def _astrometry_solver(filename, location, queue):
     # deactivate venv temporarily
     venv, path = _deactivate_venv()
 
-    print(f'executing: {solver_exec_string}')
-    solve_start = time()
-    solver_result = run(solver_exec_and_args, stdout=PIPE, stderr=STDOUT)
-    solve_finish = time()
-    print(f'solver halt after {solve_finish - solve_start} sec')
+    if not _wcsinfo_exists(filename):
+        print(f'executing: {solver_exec_string}')
+        solve_start = time()
+        solver_result = run(solver_exec_and_args, stdout=PIPE, stderr=STDOUT)
+        solve_finish = time()
+        print(f'solver halt after {solve_finish - solve_start} sec')
 
-    print(f'executing: {wcsinfo_exec_string}')
-    wcsinfo_result = run(wcsinfo_exec_and_args, stdout=PIPE, stderr=STDOUT)
-    parsed_wcsinfo = wcsinfo_parse(wcsinfo_result.stdout)
+        print(f'executing: {wcsinfo_exec_string}')
+        wcsinfo_result = run(wcsinfo_exec_and_args, stdout=PIPE, stderr=STDOUT)
+        parsed_wcsinfo = wcsinfo_parse(wcsinfo_result.stdout)
+        print(f'wcsinfo parsed.')
+
+        queue.put(parsed_wcsinfo)
+    else:
+        # cached solution found for this image, we probably are already done
+        queue.put(None)
 
     # reactivate venv
     _reactivate_venv(venv, path)
-
-    queue.put(parsed_wcsinfo)
