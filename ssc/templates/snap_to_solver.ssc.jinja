@@ -1,4 +1,4 @@
-// Name: Solver Move
+// Name: Snap to Solver
 // Author: Bill West
 // License: Public Domain
 // Version: 0.1
@@ -13,6 +13,9 @@ var outputFilename = "{{output_filename}}";
 
 var zoomTransSec = 0;
 
+core.output("false");
+core.saveOutputAs(outputFilename);
+core.resetOutput();
 
 core.moveToRaDec(ra, dec)
 StelMovementMgr.zoomTo(zoomArcMin, zoomTransSec);
@@ -20,16 +23,6 @@ StelMovementMgr.zoomTo(zoomArcMin, zoomTransSec);
 // use rotation data to set oculars frame to the current orientation
 Oculars.setSelectedCCDRotationAngle(rotationAngle);
 
-// send current ra/dec location to file
-var current_ra = core.getViewRaJ2000Angle();
-var current_dec = core.getViewDecJ2000Angle()
-var current_rotation = Oculars.getSelectedCCDRotationAngle();
-
-
-core.output("{}");
-
-
+core.output("true");
 core.saveOutputAs(outputFilename);
 core.resetOutput();
-
-core.wait(5);
