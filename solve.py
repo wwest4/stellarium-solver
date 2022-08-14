@@ -16,7 +16,7 @@ print(f'found file: {image_path}')
 
 
 """next, run the plate solver"""
-solution = solver(location=location)
+solution = solver(image_path, location)
 print(f'solution result: {solution}')
 
 
